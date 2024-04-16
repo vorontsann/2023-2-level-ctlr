@@ -7,6 +7,7 @@ import pathlib
 import re
 import requests
 
+from bs4 import BeautifulSoup
 from typing import Pattern, Union
 from core_utils.config_dto import ConfigDTO
 
