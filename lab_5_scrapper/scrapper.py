@@ -10,6 +10,36 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Pattern, Union
 from core_utils.config_dto import ConfigDTO
+from random import randrange
+from time import sleep
+
+
+class IncorrectSeedURLError:
+    pass
+
+
+class IncorrectNumberOfArticlesError:
+    pass
+
+
+class NumberOfArticlesOutOfRangeError:
+    pass
+
+
+class IncorrectHeadersError:
+    pass
+
+
+class IncorrectEncodingError:
+    pass
+
+
+class IncorrectTimeoutError:
+    pass
+
+
+class IncorrectVerifyError:
+    pass
 
 
 class Config:
@@ -160,6 +190,13 @@ def make_request(url: str, config: Config) -> requests.models.Response:
     Returns:
         requests.models.Response: A response from a request
     """
+    sleep(randrange(3))
+    return requests.get(
+        url=url,
+        timeout=config.get_timeout(),
+        headers=config.get_headers(),
+        verify=config.get_verify_certificate()
+    )
 
 
 class Crawler:
@@ -176,6 +213,9 @@ class Crawler:
         Args:
             config (Config): Configuration
         """
+        self.config = config
+        self.urls = []
+        self.url_pattern = "https://www.nkj.ru"
 
     def _extract_url(self, article_bs: BeautifulSoup) -> str:
         """
@@ -187,11 +227,27 @@ class Crawler:
         Returns:
             str: Url from HTML
         """
+        url = ""
+        links = article_bs.find_all("h2")
+        for link in links:
+            url = link.find("a").get("href")
+        url = str(self.url_pattern + url)
+        return url
 
     def find_articles(self) -> None:
         """
         Find articles.
         """
+        for seed_url in self.get_search_urls():
+            response = make_request(seed_url, self.config)
+            if not response.ok:
+                continue
+
+            article_bs = BeautifulSoup(response.text, 'lxml')
+            for i in range(20):
+                url = self._extract_url(article_bs)
+                if url:
+                    self.urls.append(url)
 
     def get_search_urls(self) -> list:
         """
@@ -200,6 +256,7 @@ class Crawler:
         Returns:
             list: seed_urls param
         """
+        return self.config.get_seed_urls()
 
 
 # 10
@@ -264,6 +321,10 @@ def prepare_environment(base_path: Union[pathlib.Path, str]) -> None:
     Args:
         base_path (Union[pathlib.Path, str]): Path where articles stores
     """
+    if not base_path.exists():
+        base_path.mkdir()
+    base_path.rmdir()
+    base_path.mkdir()
 
 
 def main() -> None:

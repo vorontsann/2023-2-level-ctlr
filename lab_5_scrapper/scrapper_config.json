@@ -1,9 +1,17 @@
 {
-    "seed_urls": [],
-    "headers": {},
-    "total_articles_to_find_and_parse": 0,
-    "encoding": "",
-    "timeout": 0,
+    "seed_urls": ["https://www.nkj.ru/news/index.php?PAGEN_3=19&PAGEN_2=355&PAGEN_1=2",
+                "https://www.nkj.ru/news/?id=22962&PAGEN_2=317&PAGEN_1=3",
+                "https://www.nkj.ru/news/index.php?PAGEN_3=19&PAGEN_2=355&PAGEN_1=4",
+                "https://www.nkj.ru/news/index.php?PAGEN_3=19&PAGEN_2=355&PAGEN_1=5",
+                "https://www.nkj.ru/news/index.php?PAGEN_3=19&PAGEN_2=355&PAGEN_1=6"],
+    "headers": {"Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                "Content-Type": "application/x-www-form-urlencoded"
+                },
+    "total_articles_to_find_and_parse": 100,
+    "encoding": "utf-8",
+    "timeout": 10,
     "should_verify_certificate": true,
     "headless_mode": true
 }
