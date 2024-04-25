@@ -2,16 +2,21 @@
 Crawler implementation.
 """
 # pylint: disable=too-many-arguments, too-many-instance-attributes, unused-import, undefined-variable
+import datetime
 import json
 import pathlib
 import re
-import requests
-
-from bs4 import BeautifulSoup
-from typing import Pattern, Union
-from core_utils.config_dto import ConfigDTO
 from random import randrange
 from time import sleep
+from typing import Pattern, Union
+
+import requests
+from bs4 import BeautifulSoup
+
+from core_utils import constants
+from core_utils.article.article import Article
+from core_utils.article.io import to_meta, to_raw
+from core_utils.config_dto import ConfigDTO
 
 
 class IncorrectSeedURLError:
@@ -277,6 +282,10 @@ class HTMLParser:
             article_id (int): Article id
             config (Config): Configuration
         """
+        self.full_url = full_url
+        self.article_id = article_id
+        self.config = config
+        self.article = Article(self.full_url, self.article_id)
 
     def _fill_article_with_text(self, article_soup: BeautifulSoup) -> None:
         """
@@ -314,6 +323,7 @@ class HTMLParser:
         """
 
 
+
 def prepare_environment(base_path: Union[pathlib.Path, str]) -> None:
     """
     Create ASSETS_PATH folder if no created and remove existing folder.
@@ -321,10 +331,10 @@ def prepare_environment(base_path: Union[pathlib.Path, str]) -> None:
     Args:
         base_path (Union[pathlib.Path, str]): Path where articles stores
     """
-    if not base_path.exists():
-        base_path.mkdir()
-    base_path.rmdir()
-    base_path.mkdir()
+    base_path.mkdir(parents=True, exist_ok=True)
+
+    for file in base_path.iterdir():
+        file.unlink(missing_ok=True)
 
 
 def main() -> None:
