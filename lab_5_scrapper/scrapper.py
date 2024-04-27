@@ -256,10 +256,15 @@ class Crawler:
                 continue
 
             article_bs = BeautifulSoup(response.text, 'lxml')
-            for i in range(20):
-                url = self._extract_url(article_bs)
-                if url:
-                    self.urls.append(url)
+            # for i in range(20):
+            #     url = self._extract_url(article_bs)
+            #     if url:
+            #         self.urls.append(url)
+            for link in article_bs.find(class_='news-list').find_all('article'):
+                if len(self.urls) == self.config.get_num_articles():
+                    break
+                if self._extract_url(link) and self._extract_url(link) not in self.urls:
+                    self.urls.append(self._extract_url(link))
 
     def get_search_urls(self) -> list:
         """
@@ -320,7 +325,7 @@ class HTMLParser:
         author = article_soup.find(class_="author").text
         if not isinstance(author, str) or not author:
             author = 'NOT FOUND'
-        self.article.author = [author[7:-11:]]
+        self.article.author = [author[7:-5:]]
 
     def unify_date_format(self, date_str: str) -> datetime.datetime:
         """
@@ -332,6 +337,7 @@ class HTMLParser:
         Returns:
             datetime.datetime: Datetime object
         """
+        # return datetime.datetime.strptime(date_str, '%Y.%m.%d %H:%M:%S')
 
     def parse(self) -> Union[Article, bool, list]:
         """
@@ -347,7 +353,6 @@ class HTMLParser:
             self._fill_article_with_meta_information(article_bs)
 
         return self.article
-
 
 
 def prepare_environment(base_path: Union[pathlib.Path, str]) -> None:
