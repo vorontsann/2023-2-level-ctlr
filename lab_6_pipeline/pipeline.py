@@ -118,8 +118,8 @@ class TextProcessingPipeline(PipelineProtocol):
         for article in articles:
             to_cleaned(article)
             if self._analyzer:
-                texts = split_by_sentence(article.text)
-                analyzed_texts = self._analyzer.analyze(texts)
+                texts_articles = split_by_sentence(article.text)
+                analyzed_texts = self._analyzer.analyze(texts_articles)
                 article.set_conllu_info(analyzed_texts)
                 self._analyzer.to_conllu(article)
 
