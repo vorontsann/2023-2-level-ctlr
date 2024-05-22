@@ -59,6 +59,12 @@ def simple_graph_task() -> nx.DiGraph:
         nx.DiGraph: graph as in [/images/task_1_simple_graph.png]
     """
     # YOUR CODE GOES HERE
+    simple_graph = nx.DiGraph()
+    for node in [2,3,4,5]:
+        simple_graph.add_node(node)
+        for from_vertex, to_vertex in [(2,3), (2,4), (4,5)]:
+            simple_graph.add_edge(from_vertex, to_vertex)
+    return simple_graph
 
 
 def family_graph_example() -> nx.DiGraph:
@@ -118,14 +124,22 @@ def family_graph_task() -> nx.DiGraph:
     Returns:
         nx.DiGraph: graph as in [/images/task_2_family_graph.png]
     """
-    # relatives = {
-    #     "Настя": {"age": 66, "hair": "blonde"},
-    #     "Дима": {"age": 70, "hair": "ginger"},
-    #     "Степа": {"age": 41, "hair": "black"},
-    #     "Вика": {"age": 40, "hair": "ginger"},
-    #     "Лида": {"age": 15, "hair": "black"},
-    # }
-    # YOUR CODE GOES HERE
+    relatives = {
+        "Настя": {"age": 66, "hair": "blonde"},
+        "Дима": {"age": 70, "hair": "ginger"},
+        "Степа": {"age": 41, "hair": "black"},
+        "Вика": {"age": 40, "hair": "ginger"},
+        "Лида": {"age": 15, "hair": "black"},
+    }
+
+    family_graph = nx.DiGraph()
+    for name, features in relatives.items():
+        family_graph.add_node(name, age=features["age"], hair=features["hair"])
+
+    family_graph.add_edge("Настя", "Степа", label="mother")
+    family_graph.add_edge("Степа", "Лида", label="father")
+    family_graph.add_edge("Вика", "Лида", label="mother")
+    family_graph.add_edge("Дима", "Вика", label="father")
 
 
 def match_subgraph_example() -> list[dict[str, str]]:
