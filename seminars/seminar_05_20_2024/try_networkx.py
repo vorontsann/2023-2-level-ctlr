@@ -141,6 +141,8 @@ def family_graph_task() -> nx.DiGraph:
     family_graph.add_edge("Вика", "Лида", label="mother")
     family_graph.add_edge("Дима", "Вика", label="father")
 
+    return family_graph
+
 
 def match_subgraph_example() -> list[dict[str, str]]:
     """
