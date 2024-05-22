@@ -74,6 +74,15 @@ class CorpusManager:
         if len(meta_files) != len(raw_files):
             raise InconsistentDatasetError
 
+        sorted_raw_files = sorted(raw_files, key=lambda file: get_article_id_from_filepath(file))
+        sorted_meta_files = sorted(meta_files, key=lambda file: get_article_id_from_filepath(file))
+
+        for index, (raw_file, meta_file) in enumerate(zip(sorted_raw_files, sorted_meta_files)):
+            if (index + 1 != get_article_id_from_filepath(raw_file) or index + 1 != get_article_id_from_filepath(
+                    meta_file)
+                    or raw_file.stat().st_size == 0 or meta_file.stat().st_size == 0):
+                raise InconsistentDatasetError
+
     def _scan_dataset(self) -> None:
         """
         Register each dataset entry.
@@ -124,7 +133,6 @@ class TextProcessingPipeline(PipelineProtocol):
                 self._analyzer.to_conllu(article)
 
 
-
 class UDPipeAnalyzer(LibraryWrapper):
     """
     Wrapper for udpipe library.
@@ -136,6 +144,7 @@ class UDPipeAnalyzer(LibraryWrapper):
         """
         Initialize an instance of the UDPipeAnalyzer class.
         """
+        self._analyzer = self._bootstrap()
 
     def _bootstrap(self) -> AbstractCoNLLUAnalyzer:
         """
@@ -144,6 +153,16 @@ class UDPipeAnalyzer(LibraryWrapper):
         Returns:
             AbstractCoNLLUAnalyzer: Analyzer instance
         """
+        model = spacy_udpipe.load_from_path(lang="ru",
+                                            path=str(UDPIPE_MODEL_PATH)
+                                            )
+
+        model.add_pipe(
+            "conll_formatter",
+            last=True,
+            config={"conversion_maps": {"XPOS": {"": "_"}}, "include_headers": True},
+        )
+        return model
 
     def analyze(self, texts: list[str]) -> list[StanzaDocument | str]:
         """
@@ -155,6 +174,13 @@ class UDPipeAnalyzer(LibraryWrapper):
         Returns:
             list[StanzaDocument | str]: List of documents
         """
+        documents = []
+        for text in texts:
+            analyzed_text = self._analyzer(text)
+            conllu_annotation = analyzed_text._.conll_str
+            documents.append(conllu_annotation)
+
+        return documents
 
     def to_conllu(self, article: Article) -> None:
         """
@@ -163,6 +189,10 @@ class UDPipeAnalyzer(LibraryWrapper):
         Args:
             article (Article): Article containing information to save
         """
+        with open(article.get_file_path(
+                kind=ArtifactType.UDPIPE_CONLLU), 'w', encoding='utf-8') as annotation_file:
+            annotation_file.writelines(article.get_conllu_info())
+            annotation_file.write("\n")
 
 
 class StanzaAnalyzer(LibraryWrapper):
@@ -310,7 +340,9 @@ def main() -> None:
     Entrypoint for pipeline module.
     """
     corpus_manager = CorpusManager(path_to_raw_txt_data=ASSETS_PATH)
-    pipeline = TextProcessingPipeline(corpus_manager)
+    udpipe_analyzer = UDPipeAnalyzer()
+    pipeline = TextProcessingPipeline(corpus_manager, udpipe_analyzer)
+    pipeline.run()
 
 
 if __name__ == "__main__":
